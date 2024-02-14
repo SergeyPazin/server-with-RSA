@@ -17,7 +17,6 @@ void ClientHandler(RSA* rsa_public_key) {
         unsigned char* encrypted = new unsigned char[msg_size];
         recv(Connection, (char*)encrypted, msg_size, NULL);
 
-        // Расшифрование сообщения с помощью RSA
         char* decrypted = new char[RSA_size(rsa_public_key)];
         int decrypted_length = RSA_private_decrypt(msg_size, encrypted, (unsigned char*)decrypted, rsa_public_key, RSA_PKCS1_PADDING);
         if (decrypted_length == -1) {
@@ -33,11 +32,9 @@ void ClientHandler(RSA* rsa_public_key) {
 }
 
 int main(int argc, char* argv[]) {
-    // Инициализация OpenSSL
     OpenSSL_add_all_algorithms();
     ERR_load_crypto_strings();
 
-    // Загрузка публичного ключа RSA из файла
     FILE* fp = fopen("public_key.pem", "rb");
     if (!fp) {
         std::cerr << "Failed to open public key file" << std::endl;
@@ -74,7 +71,6 @@ int main(int argc, char* argv[]) {
     unsigned char* encrypted = new unsigned char[msg_size];
     recv(Connection, (char*)encrypted, msg_size, NULL);
 
-    // Расшифрование приветственного сообщения с помощью RSA
     char* decrypted = new char[RSA_size(rsa_public_key)];
     int decrypted_length = RSA_public_decrypt(msg_size, encrypted, (unsigned char*)decrypted, rsa_public_key, RSA_PKCS1_PADDING);
     if (decrypted_length == -1) {
@@ -88,14 +84,12 @@ int main(int argc, char* argv[]) {
     delete[] encrypted;
     delete[] decrypted;
 
-    // Создание потока для обработки сообщений от сервера
     CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)ClientHandler, (LPVOID)rsa_public_key, NULL, NULL);
 
     std::string msg;
     while (true) {
         std::getline(std::cin, msg);
 
-        // Шифрование сообщения с помощью RSA
         unsigned char* encrypted = new unsigned char[RSA_size(rsa_public_key)];
         int encrypted_length = RSA_public_encrypt(msg.length(), (unsigned char*)msg.c_str(), encrypted, rsa_public_key, RSA_PKCS1_PADDING);
         if (encrypted_length == -1) {
@@ -110,7 +104,6 @@ int main(int argc, char* argv[]) {
         Sleep(10);
     }
 
-    // Очистка
     RSA_free(rsa_public_key);
     EVP_cleanup();
     ERR_free_strings();
